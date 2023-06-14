@@ -1,0 +1,26 @@
+from infra.servererror import ErrorServer
+from models.{{namefilemodel(t)}} import {{name(t)}}
+from .handler import Handler
+from middlewares.middlewareAuth import MiddlewareAuth
+
+
+class {{handlername(t)}}(Handler):
+    
+    def get(self):
+        try:
+            MiddlewareAuth(self.request).authenticate()
+            return self.toJson({{name(t)}}().getAll(as_dict=True))
+        except ErrorServer as e:
+            e.get()
+            return e.error
+    
+    def post(self):
+        try:
+            MiddlewareAuth(self.request).authenticate()
+            return self.toJson({{name(t)}}.fromDict(self.JSON).save())
+        except ErrorServer as e:
+            e.get()
+            return e.error
+    
+    def put(self):
+        return self.post()

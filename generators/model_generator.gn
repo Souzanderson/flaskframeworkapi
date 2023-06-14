@@ -1,0 +1,44 @@
+from repository.database import DataBase
+from datetime import datetime
+
+from settings import ENVIRONMENT
+
+class {{name(t)}}(DataBase):
+    def __init__(self):
+        super().__init__("{{t}}", env=ENVIRONMENT)
+        {% for item in columns %}
+        {{item}}{% endfor %}
+
+    @staticmethod
+    def fromDict(dct:dict):
+        obj = {{name(t)}}(){% for item in fromdict %}
+        {{item}}{% endfor %}
+
+        return obj
+
+    def toDict(self):
+        return { {% for item in todict %}
+            {{item}}{% endfor %}
+        }
+        
+    def getAll(self, as_dict=False):
+        if as_dict: return [d for d in self.select("*")]
+        return [{{name(t)}}.fromDict(d) for d in self.select("*")]
+
+    
+    def getById(self, {{getindexes()}}):
+        return {{name(t)}}.fromDict(self.select(where = f"{{getindexeswhere()}}", first=True))
+
+    
+    def save(self):
+        try:
+            self.dtupdate = datetime.now().strftime("%y-%m-%d %H:%M:%S")
+            if {{getindexesif()}}:
+                res = self.toDict()
+                self.update(res, conditions = f"{{getindexeswhere('self.')}}")
+            else:
+                res = self.toDict()
+                self.insert(res)
+            return {"response": "Dado inserido!"}
+        except Exception as e:
+            raise(Exception(f"Error on insert {{name(t)}} => {str(e)}"))
